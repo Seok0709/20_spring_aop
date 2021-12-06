@@ -5,6 +5,8 @@ import java.util.Arrays;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -145,12 +147,16 @@ public class Advice {
 		System.out.println("업무 소요시간 : " +(endTime-startTime));
 		System.out.println("-------------------------------\n");
 	}
-	
-	@After("execution(* getInfo(*,*))")
+	// 호출된 메서드가 성공적으로 실행 된 후 
+	@AfterReturning("execution(* getInfo(*,*))")
 	public void afterGetInfo(JoinPoint jp) {	// joinPoint를 통하여 메서드의 파라메타를 전달 받을 수 있다.
 		
 		System.out.println("getArgs :" + Arrays.toString(jp.getArgs())); // 파라미터 확인
 		
 	}
+	
+	// 호출된 메서드에서 예외 발생 후
+	// @AfterThrowing("execution(void com.spring.aop.Employee.getError())")
+	
 
 }

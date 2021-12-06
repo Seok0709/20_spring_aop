@@ -15,4 +15,7 @@ public class Employee {
 	public void getInfo(String title, int salary) {
 		
 	}
+	public void getError() {
+		System.out.println(3/0);
+	}
 }
