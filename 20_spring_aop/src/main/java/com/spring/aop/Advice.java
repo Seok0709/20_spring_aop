@@ -1,7 +1,6 @@
 package com.spring.aop;
 
-import java.util.Arrays;
-
+import org.apache.catalina.tribes.util.Arrays;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.After;
@@ -10,6 +9,9 @@ import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.Pointcut;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /*
@@ -80,7 +82,9 @@ import org.springframework.stereotype.Component;
 @Component
 @Aspect		// Aspect bean으로 등록
 public class Advice {
-	
+	// slf4j import
+	private static Logger logger = LoggerFactory.getLogger(Advice.class);
+														// 클래스명.class
 	/*
 	 *  # execution 명시자 
 	 *  
@@ -118,16 +122,25 @@ public class Advice {
 	 *  
 	 * */
 	
+	@Pointcut("execution(* work())")  // 중복되는 execution을 기술한다.
+	public void work() {
+		// 메서드의 본문은 특정한 의미가 없다.
+	}
+	
 	// 메서드 호출 전
-	@Before("execution(* com.spring.aop.*.work())")
+	@Before("work()")
+	//@Before("execution(* com.spring.aop.*.work())")
 	public void before() {
-		System.out.println("AOP Before 메서드 호출 : 출근한다.");
+		logger.info("AOP Before 메서드 호출 : 출근한다.");
+		//System.out.println("AOP Before 메서드 호출 : 출근한다.");
 	}
 	
 	// 메서드 호출 후
-	@After("execution(* work())")
+	@After("work()")
+	//@After("execution(* work())")
 	public void after() {
-		System.out.println("AOP After 메서드 호출 : 퇴근한다.\n");
+		logger.info("AOP After 메서드 호출 : 퇴근한다\n.");
+		//System.out.println("AOP After 메서드 호출 : 퇴근한다.\n");
 	}
 	
 	// 메서드 호출 전 후 
@@ -135,28 +148,37 @@ public class Advice {
 	public void around(ProceedingJoinPoint pjp) {
 		
 		// 메서드 호출 전
-		System.out.println("\n-------------------------------");
+		logger.info("\n=======================");
 		long startTime = System.currentTimeMillis();
 		
 		// 메서드 호출
 		try {
-			// proceed() 메서드를 통하여 타겟팅 메서드를 실행한다.
-			pjp.proceed();} catch (Throwable e) {e.printStackTrace();}
+			// proceed()메서드를 통하여서 타겟팅 메서드를 실행한다.
+			pjp.proceed();
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
 		
+		// 메서드 호출 후
 		long endTime = System.currentTimeMillis();
-		System.out.println("업무 소요시간 : " +(endTime-startTime));
-		System.out.println("-------------------------------\n");
-	}
-	// 호출된 메서드가 성공적으로 실행 된 후 
-	@AfterReturning("execution(* getInfo(*,*))")
-	public void afterGetInfo(JoinPoint jp) {	// joinPoint를 통하여 메서드의 파라메타를 전달 받을 수 있다.
-		
-		System.out.println("getArgs :" + Arrays.toString(jp.getArgs())); // 파라미터 확인
+		logger.info("업무 소요 시간 : " + (endTime-startTime));
+		logger.info("=======================\n");
 		
 	}
 	
-	// 호출된 메서드에서 예외 발생 후
-	// @AfterThrowing("execution(void com.spring.aop.Employee.getError())")
+	@AfterReturning("execution(* getInfo(..))")
+	public void afterGetInfo(JoinPoint jp) { // JoinPoint를 통하여 메서드의 파라메타를 전달받을 수 있다.
+		logger.warn("getArgs : " + Arrays.toString(jp.getArgs())); 	// 파라미터 확인
+		logger.warn("getKind : " + jp.getKind()); 					// 메서드의 종류확인
+		logger.warn("getName : " + jp.getSignature().getName());		// 메서드에 대한 설명
+		logger.warn("target  : " + jp.getTarget());                  // 대상 객체를 반환
+		logger.warn("AOP AfterReturning 메서드 호출\n");
+	}
 	
-
+	@AfterThrowing("execution(* com.spring.aop.Employee.getError())")
+	public void afterThrowing() {
+		System.out.println("AOP AfterThrowing 메서드 호출");
+	}
+	
+	
 }
